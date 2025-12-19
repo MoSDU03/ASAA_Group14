@@ -19,6 +19,10 @@
 %\theoremstyle{definition}
 %\newtheorem{definition}{Definition}[section]
 
+% --- Force XeTeX to write PDF directly (avoids xdvipdfmx pdf_link_obj crash) ---
+\ifdefined\XeTeXoutputmode
+  \XeTeXoutputmode=1
+\fi
 
 \usepackage{listings}
 \lstset
