@@ -111,44 +111,41 @@ jobs:
       packages: write
       contents: read 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4.0.0
+    - name: Checkout repository
+      uses: actions/checkout@v4.0.0
 
-      # Cache LaTeX packages
-      - name: Cache LaTeX packages
-        id: latex-cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            /usr/share/texlive/
-          key: ${{ runner.os }}-texlive-v4
+    - name: Cache LaTeX packages
+      id: latex-cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          /usr/share/texlive/
+        key: ${{ runner.os }}-texlive-pdflatex-v1
 
-      # Install LaTeX texlive main packages only if cache was not restored
-      - name: Install LaTeX packages
-        if: steps.latex-cache.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y texlive texlive-science
+    - name: Install LaTeX packages
+      if: steps.latex-cache.outputs.cache-hit != 'true'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-science texlive-fonts-recommended
 
-      - name: Install LaTeX texlive-xetex Extension
-        run: |
-          sudo apt-get install -y texlive-xetex
-          mkdir handin/
-      # Compile the main.tex file
-      - name: Compile LaTeX document
-        run: |
-          cd report/GroupTemplate
-          xelatex -synctex=1 -interaction=nonstopmode main.tex
-      # Rename and move the compiled file to handin folder in root
-      - name: Rename compiled PDF
-        run: |
-          mv report/GroupTemplate/main.pdf handin/report${{ env.GROUP_NUMBER }}.pdf
-      
-      - name: Upload GroupReport-pdf artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: GroupReport-pdf 
-          path: handin/
+    - name: Prepare handin directory
+      run: mkdir -p handin/
+
+    - name: Compile LaTeX document
+      run: |
+        cd report/GroupTemplate
+        pdflatex -interaction=nonstopmode main.tex
+            pdflatex -interaction=nonstopmode main.tex
+
+    - name: Rename compiled PDF
+      run: |
+        mv report/GroupTemplate/main.pdf handin/report${{ env.GROUP_NUMBER }}.pdf
+    
+    - name: Upload GroupReport-pdf artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: GroupReport-pdf 
+        path: handin/
 
   
   # Job for creating handin artifact, this zip file will contain your repo, groupreportPDF, and build artifact if any
