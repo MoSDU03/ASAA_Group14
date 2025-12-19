@@ -64,6 +64,12 @@
   \def\textgreater{>}%
 }
 
+% Safe monospace for UPPAAL queries (handles < and > safely)
+\newcommand{\uppaaltt}[1]{\texttt{\detokenize{#1}}}
+
+\pdfstringdefDisableCommands{%
+  \def\uppaaltt#1{#1}%
+}
 
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
