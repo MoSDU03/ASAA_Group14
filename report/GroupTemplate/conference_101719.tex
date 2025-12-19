@@ -10,7 +10,6 @@
 \usepackage{multirow}
 \usepackage{rotating}
 \usepackage{mdframed}
-\usepackage{hyperref}
 \usepackage{tikz}
 \usepackage{makecell}
 \usepackage{tcolorbox}
@@ -44,16 +43,20 @@
 \usepackage{amsmath}
 \usepackage{textcomp}
 
-% --- UPPAAL operators (safe everywhere) ---
-\newcommand{\ABox}{\ensuremath{\mathrm{A}[\,]}}                 % A[]
-\newcommand{\EAng}{\ensuremath{\mathrm{E}\langle\rangle}}       % E<>
-\newcommand{\AAng}{\ensuremath{\mathrm{A}\langle\rangle}}       % A<>
-
-% Optional helpers
+% --- UPPAAL operators (math mode) ---
+\newcommand{\ABox}{\ensuremath{\mathrm{A}[\,]}}           % A[]
+\newcommand{\EAng}{\ensuremath{\mathrm{E}\langle\rangle}} % E<>
+\newcommand{\AAng}{\ensuremath{\mathrm{A}\langle\rangle}} % A<>
 \newcommand{\LE}{\ensuremath{\leq}}
 \newcommand{\GE}{\ensuremath{\geq}}
 
-% --- Hyperref: safe text in PDF strings/bookmarks ---
+% hyperref must be loaded before pdfstringdefDisableCommands
+\usepackage{hyperref}
+
+% Safe monospace UPPAAL queries (prints literal < > _ ! etc.)
+\newcommand{\uppaaltt}[1]{\texttt{\detokenize{#1}}}
+
+% Hyperref: safe text in PDF strings/bookmarks
 \pdfstringdefDisableCommands{%
   \def\ABox{A[]}% 
   \def\EAng{E<>}%
@@ -62,12 +65,6 @@
   \def\GE{>=}%
   \def\textless{<}%
   \def\textgreater{>}%
-}
-
-% Safe monospace for UPPAAL queries (handles < and > safely)
-\newcommand{\uppaaltt}[1]{\texttt{\detokenize{#1}}}
-
-\pdfstringdefDisableCommands{%
   \def\uppaaltt#1{#1}%
 }
 
