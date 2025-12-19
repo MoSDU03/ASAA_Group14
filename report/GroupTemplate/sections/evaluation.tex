@@ -14,7 +14,7 @@ guard: position_sensor_active
 sync: position_valid?
 assign: valve_open!, fill_clock = 0
 
-// Filling to ClosingValve  
+// Filling to ClosingValve
 guard: current_level >= TARGET_LEVEL - 5
 sync: target_reached!
 assign: valve_close!
@@ -38,16 +38,16 @@ and \texttt{\AAng} means ``for all paths eventually.''
 \hline
 \textbf{Query} & \textbf{Property} & \textbf{Result} \\
 \hline
-Q1  & \ABox\ not deadlock & Satisfied \\
-Q2  & \EAng\ FillController.Complete & Satisfied \\
-Q3  & \ABox\ Filling => fill\_clock \LE 3000 & Satisfied \\
-Q4  & \ABox\ WaitPos => cycle\_clock \LE 200 & Satisfied \\
-Q5  & \ABox\ Complete => level in [325,335] & Satisfied \\
-Q6  & \EAng\ Fault & Satisfied \\
-Q7  & \AAng\ Idle & Satisfied \\
-Q8  & \EAng\ (Complete AND cycle in [600,1500]) & Satisfied \\
-Q9  & \ABox\ (!sensor AND Filling) => Fault & Satisfied \\
-Q10 & \ABox\ (timeout AND ClosingValve) => Fault & Satisfied \\
+Q1  & \texttt{A[] not deadlock} & Satisfied \\
+Q2  & \texttt{E<> FillController.Complete} & Satisfied \\
+Q3  & \texttt{A[] Filling => fill\_clock <= 3000} & Satisfied \\
+Q4  & \texttt{A[] WaitPos => cycle\_clock <= 200} & Satisfied \\
+Q5  & \texttt{A[] Complete => level in [325,335]} & Satisfied \\
+Q6  & \texttt{E<> Fault} & Satisfied \\
+Q7  & \texttt{A<> Idle} & Satisfied \\
+Q8  & \texttt{E<> (Complete AND cycle in [600,1500])} & Satisfied \\
+Q9  & \texttt{A[] (!sensor AND Filling) => Fault} & Satisfied \\
+Q10 & \texttt{A[] (timeout AND ClosingValve) => Fault} & Satisfied \\
 \hline
 \end{tabular}
 \end{table}

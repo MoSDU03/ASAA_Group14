@@ -43,11 +43,11 @@ Figure~\ref{fig:statemachine} shows the FillController state machine with six st
 
 Transitions include guards and actions following SysML notation:
 \begin{itemize}
-    \item \textit{Idle} -> \textit{WaitingPosition} [canDetected] / cycleStart()
-    \item \textit{WaitingPosition} -> \textit{Filling} [positionValid AND cycleTime \ensuremath{\leq} 200ms] / openValve()
-    \item \textit{Filling} -> \textit{ClosingValve} [level \ensuremath{\geq} 325ml AND fillTime \ensuremath{\leq} 3000ms] / closeValve()
-    \item \textit{ClosingValve} -> \textit{Complete} [levelInTolerance] / logSuccess()
-    \item Any state -> \textit{Fault} [timeout OR sensorFailure] / emergencyClose()
+    \item \textit{Idle} $\rightarrow$ \textit{WaitingPosition} [canDetected] / cycleStart()
+    \item \textit{WaitingPosition} $\rightarrow$ \textit{Filling} [positionValid AND cycleTime $\leq$ 200\,ms] / openValve()
+    \item \textit{Filling} $\rightarrow$ \textit{ClosingValve} [level $\geq$ 325\,ml AND fillTime $\leq$ 3000\,ms] / closeValve()
+    \item \textit{ClosingValve} $\rightarrow$ \textit{Complete} [levelInTolerance] / logSuccess()
+    \item Any state $\rightarrow$ \textit{Fault} [timeout OR sensorFailure] / emergencyClose()
 \end{itemize}
 
 Timing constraints appear as state invariants (\textit{WaitingPosition}: cycleTime $\leq$ 200ms, \textit{Filling}: fillTime $\leq$ 3000ms) and transition guards, enabling direct mapping to UPPAAL clock constraints.

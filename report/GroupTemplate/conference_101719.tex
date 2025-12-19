@@ -35,43 +35,31 @@
 \usepackage{array, multirow}
 \usepackage{enumitem}
 
+% --- Unicode operators (optional, but fine) ---
 \usepackage{newunicodechar}
 \newunicodechar{≤}{\ensuremath{\leq}}
 \newunicodechar{≥}{\ensuremath{\geq}}
 
+% --- Math + text symbols ---
+\usepackage{amsmath}
+\usepackage{textcomp}
 
-\usepackage{amsmath} % keep this once
+% --- UPPAAL operators (safe everywhere) ---
+\newcommand{\ABox}{\ensuremath{\mathrm{A}[\,]}}                 % A[]
+\newcommand{\EAng}{\ensuremath{\mathrm{E}\langle\rangle}}       % E<>
+\newcommand{\AAng}{\ensuremath{\mathrm{A}\langle\rangle}}       % A<>
 
-% UPPAAL query symbols (safe for text + tables + hyperlinks)
-\newcommand{\ABox}{\ensuremath{\mathrm{A}[\ ]}}            % A[]
-\newcommand{\EAng}{\ensuremath{\mathrm{E}\langle\rangle}} % E<>
-\newcommand{\AAng}{\ensuremath{\mathrm{A}\langle\rangle}} % A<>
+% Optional helpers
 \newcommand{\LE}{\ensuremath{\leq}}
 \newcommand{\GE}{\ensuremath{\geq}}
 
-% If hyperref is used, prevent bookmark/pdf-string crashes
+% --- Hyperref: safe text in PDF strings/bookmarks ---
 \pdfstringdefDisableCommands{%
   \def\ABox{A[]}%
   \def\EAng{E<>}%
   \def\AAng{A<>}%
   \def\LE{<=}%
   \def\GE{>=}%
-}
-
-
-\usepackage{textcomp}
-
-\catcode`<=\active
-\catcode`>=\active
-\def<{\textless}
-\def>{\textgreater}
-
-% Hyperref safety (PDF strings / bookmarks)
-\pdfstringdefDisableCommands{%
-  \def<{}%
-  \def>{}%
-  \def\textless{<}%
-  \def\textgreater{>}%
 }
 
 
@@ -86,11 +74,12 @@
         Muhammed Özcelik\IEEEauthorrefmark{1},
         Dan Ngo\IEEEauthorrefmark{1},
         Dan Nguyen\IEEEauthorrefmark{1},
+        Denisa Rissa\IEEEauthorrefmark{1},
     }
     \IEEEauthorblockA{
         University of Southern Denmark, SDU Software Engineering\\
         Odense, Denmark\\
-        Email: \IEEEauthorrefmark{1} \textnormal{\{muuzc22,dango21,dangu22\}}@student.sdu.dk
+        Email: \IEEEauthorrefmark{1} \textnormal{\{muuzc22,dango21,dangu22,deris22\}}@student.sdu.dk
     }
 }
 

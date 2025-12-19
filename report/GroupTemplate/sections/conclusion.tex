@@ -28,7 +28,7 @@ Simulation provided witness traces predicting 892ms cycle time and 127ms fault d
 
 UPPAAL counter-examples identified 2 defects in initial state machine: missing \texttt{fill\_clock $\leq$ 3000} guard and missing \texttt{cycle\_clock $\leq$ 200} invariant. Both would have caused timing violations in production. Counter-example traces pinpointed exact states and clock values where violations occurred, enabling precise corrections.
 
-Iterative refinement validated model-driven approach: formal model -> verification -> correction -> implementation -> validation. Final implementation's 892ms mean matches UPPAAL prediction confirming refined model accurately captures behavior. This workflow is repeatable for other control system domains.
+Iterative refinement validated model-driven approach: formal model -\textgreater verification -\textgreater correction -\textgreater implementation -\textgreater validation. Final implementation's 892ms mean matches UPPAAL prediction confirming refined model accurately captures behavior. This workflow is repeatable for other control system domains.
 
 \subsection{Limitations}
 
