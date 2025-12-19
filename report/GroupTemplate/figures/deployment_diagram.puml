@@ -1,0 +1,61 @@
+@startuml deployment_architecture
+
+!define CONTAINER rectangle
+
+skinparam rectangle {
+    BackgroundColor<<mqtt>> LightYellow
+    BackgroundColor<<db>> LightBlue
+    BackgroundColor<<app>> LightGreen
+    BorderColor Black
+}
+
+package "Docker Host" {
+    CONTAINER "MQTT Broker\n(Mosquitto 2.0)" as mqtt <<mqtt>> {
+        port "1883" as mqtt_port
+    }
+    
+    CONTAINER "PostgreSQL 15" as db <<db>> {
+        port "5432" as db_port
+        database "filling_db" as filling_db
+    }
+    
+    CONTAINER "Sensor Simulator\n(Python 3.9)" as sensor <<app>> {
+        component "sensor_sim.py" as sim_py
+    }
+    
+    CONTAINER "Fill Controller\n(Python 3.9)" as controller <<app>> {
+        component "controller.py" as ctrl_py
+        component "State Machine" as sm
+    }
+}
+
+sensor -down-> mqtt : publish\nsensor/position\nsensor/level
+mqtt -down-> controller : subscribe\nsensor/*
+controller -up-> mqtt : publish\nvalve/command\nstatus/update
+mqtt -up-> sensor : subscribe\nvalve/*
+
+controller -right-> db : INSERT INTO\nfilling_events\n(PostgreSQL)
+
+note right of mqtt
+  **MQTT Configuration:**
+  - QoS: 1 (at-least-once)
+  - Max queued: 1000
+  - Topics: hierarchical
+end note
+
+note bottom of db
+  **Database Schema:**
+  - filling_events
+  - system_metrics  
+  - fault_log
+  + 3 views for analysis
+end note
+
+note bottom of controller
+  **State Machine:**
+  6 states, 10 transitions
+  2 clocks (cycle, fill)
+  Timeout guards
+end note
+
+@enduml

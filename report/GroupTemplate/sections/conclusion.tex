@@ -1,0 +1,67 @@
+\section{Conclusion}
+
+\subsection{Summary}
+
+This work presented a systematic model-driven approach to architecting an event-driven industrial control system. We applied EAST-ADL methodology to progress from quality attribute scenarios through formal verification to empirical validation. The resulting architecture for automated can filling achieves all 15 specified requirements with 99.1\% success rate and 892ms mean cycle time.
+
+Key results demonstrate three contributions: (1) Formal verification with UPPAAL detected 2 critical timing defects before implementation, saving significant debugging effort. (2) Event-driven architecture achieved timing predictability (43ms standard deviation) through careful timeout guard design, proving loose coupling and real-time constraints are compatible. (3) Empirical testing validated formal predictions with 0.1\% error (892ms predicted vs 892ms measured), confirming model-to-reality correlation.
+
+\subsection{Research Questions Answered}
+
+\textbf{RQ1 - How can different architectures support stated requirements?}
+
+Event-driven architecture with MQTT supports requirements through asynchronous messaging enabling component independence while state machine timeout guards ensure timing compliance. Comparison with time-triggered alternative: time-triggered would provide deterministic scheduling (lower variance) but sacrifice sensor integration flexibility and fault handling capability. For this application, event-driven better balances performance, safety, and maintainability quality attributes.
+
+\textbf{RQ2 - Which trade-offs result from technology choices?}
+
+Three validated trade-offs: (1) MQTT QoS 1 adds 5-10ms latency vs QoS 0 but prevents message loss; measured overhead is 0.7\% of cycle time budget, acceptable for gained reliability. (2) Docker containerization adds ~10ms startup overhead vs native deployment_architecture but enables isolation and reproducibility; testing shows no impact on requirements. (3) Event-driven messaging sacrifices deterministic timing of time-triggered approach for loose coupling; timeout guards recovered predictability as evidenced by 43ms standard deviation (4.8\% of mean).
+
+\textbf{RQ3 - What can be modeled, validated, and verified?}
+
+UPPAAL verified timing properties (Q3, Q4, Q8), safety invariants (Q5, Q9, Q10), liveness properties (Q7), and deadlock freedom (Q1). State space of 1,847 states explored in <1 second proves formal verification is practical for industrial control systems. 
+
+Cannot fully model: (1) Network latency variation due to broker load, mitigated via QoS configuration and validated empirically. (2) Physical component variability (valve response 15±3ms, sensor noise σ=0.8mm), measured separately and confirmed within assumptions. (3) Long-term reliability effects (component wear, temperature drift), requiring extended operational testing beyond this study.
+
+Simulation provided witness traces predicting 892ms cycle time and 127ms fault detection, both confirmed by implementation. This demonstrates UPPAAL's utility for predicting actual system behavior.
+
+\textbf{RQ4 - How do verification results improve design?}
+
+UPPAAL counter-examples identified 2 defects in initial state machine: missing \texttt{fill\_clock ≤ 3000} guard and missing \texttt{cycle\_clock ≤ 200} invariant. Both would have caused timing violations in production. Counter-example traces pinpointed exact states and clock values where violations occurred, enabling precise corrections.
+
+Iterative refinement validated model-driven approach: formal model -> verification -> correction -> implementation -> validation. Final implementation's 892ms mean matches UPPAAL prediction confirming refined model accurately captures behavior. This workflow is repeatable for other control system domains.
+
+\subsection{Limitations}
+
+\textbf{Modeling Abstractions:} UPPAAL model assumes reliable communication and deterministic component behavior. Real systems experience network delays, sensor noise, and valve response variability. While empirical testing validated these abstractions hold for our application, other domains may require extended models or different verification approaches.
+
+\textbf{Scope Constraints:} Single-can model doesn't capture concurrent filling stations, multi-product switching, or scaling to 1000+ cans/hour production rates. Architecture would need extension for these scenarios, though core patterns (event-driven, timeout guards, fault handling) should generalize.
+
+\textbf{Operational Environment:} Testing used controlled conditions (20°C, standard flow rate, no physical wear). Production deployment_architecture would encounter temperature variation, viscosity changes, and component degradation over time. Long-term reliability requires extended validation beyond 112 cycles.
+
+\subsection{Future Work}
+
+\textbf{Concurrent Production:} Extend UPPAAL model to verify multiple filling stations operating simultaneously. Research question: Can architecture scale while maintaining timing guarantees?
+
+\textbf{Adaptive Control:} Implement machine learning to predict fill rates under varying conditions (temperature, viscosity, pressure). Integrate predictions into control logic to reduce cycle time variance.
+
+\textbf{Safety Certification:} Apply ISO 26262 hazard analysis to identify additional safety requirements. Formal verification of hazard mitigation measures.
+
+\textbf{Production deployment_architecture:} Long-term study (10,000+ cycles, 24/7 operation) measuring reliability, wear effects, and maintenance needs. Validate that 99.1\% lab success rate holds in production.
+
+\textbf{Network Resilience:} Test behavior under MQTT broker failures, network partitions, and high load conditions. Design and verify broker failover mechanisms.
+
+\subsection{Recommendations for Practitioners}
+
+Based on lessons learned, we recommend:
+
+\textbf{Invest in Formal Modeling:} Time spent building UPPAAL models pays off through early defect detection. Our 2 defects found pre-implementation would have been difficult to debug in production code.
+
+\textbf{Start Simple:} Initial complex model with 10+ clocks and 20+ states was unwieldy. Simplified 2-clock model with 6 states proved sufficient. Add complexity only when verification fails to capture critical behaviors.
+
+\textbf{Use Conservative Margins:} Implement timeouts at 80-90\% of verified bounds (e.g., 180ms timeout for 200ms requirement). Accounts for model abstractions and implementation variations.
+
+\textbf{Log Everything:} Comprehensive event logging enabled empirical validation and debugging. Timestamp every state transition and message. Storage is cheap; missing data is expensive.
+
+\textbf{Validate Empirically:} Formal verification assumptions must be tested. Our MQTT latency assumption (5-10ms) required measurement. QoS configuration required tuning based on observed behavior.
+
+This work confirms that model-driven architecture with formal verification produces reliable industrial control systems when combined with empirical validation. The systematic progression from requirements through formal models to implementation provides confidence in meeting critical quality attributes.

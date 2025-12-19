@@ -1,0 +1,99 @@
+@startuml component_diagram
+!include <C4/C4_Component>
+
+skinparam component {
+    BackgroundColor<<analysis>> LightBlue
+    BackgroundColor<<device>> LightGreen
+    BackgroundColor<<infrastructure>> LightGray
+}
+
+' Analysis-level function blocks (components)
+component "SensorDataCollector" as SDC <<analysis>> {
+    portin " " as SDC_in1
+    portout "positionData" as SDC_out1
+    portout "levelData" as SDC_out2
+    portout "sensorFault" as SDC_out3
+}
+
+component "FillController" as FC <<analysis>> {
+    portin "canPosition" as FC_in1
+    portin "currentLevel" as FC_in2
+    portin "faultSignal" as FC_in3
+    portout "valveCommand" as FC_out1
+    portout "statusUpdate" as FC_out2
+}
+
+component "FaultHandler" as FH <<analysis>> {
+    portin "faultEvent" as FH_in1
+    portin "systemState" as FH_in2
+    portout "emergencyStop" as FH_out1
+    portout "diagnosticLog" as FH_out2
+}
+
+' Device-level components
+component "PositionSensor" as PS <<device>> {
+    portout "sensorReading" as PS_out
+}
+
+component "LevelSensor" as LS <<device>> {
+    portout "levelReading" as LS_out
+}
+
+component "FillValve" as FV <<device>> {
+    portin "command" as FV_in
+}
+
+' Infrastructure
+component "MQTTBroker" as MQTT <<infrastructure>> {
+}
+
+database "PostgreSQL" as DB <<infrastructure>> {
+}
+
+' Connections with data flows
+PS_out --> SDC_in1 : sensorData[byte]
+LS_out --> SDC_in1 : levelData[int]
+
+SDC_out1 -[#blue]-> MQTT : topic:\nsensor/position
+SDC_out2 -[#blue]-> MQTT : topic:\nsensor/level
+SDC_out3 -[#red]-> MQTT : topic:\nfault/sensor
+
+MQTT -[#blue]-> FC_in1 : subscribe:\nsensor/position
+MQTT -[#blue]-> FC_in2 : subscribe:\nsensor/level
+MQTT -[#red]-> FC_in3 : subscribe:\nfault/sensor
+
+FC_out1 -[#green]-> MQTT : topic:\nvalve/command
+FC_out2 -[#gray]-> MQTT : topic:\nstatus/update
+
+MQTT -[#green]-> FV_in : subscribe:\nvalve/command
+
+MQTT -[#red]-> FH_in1 : subscribe:\nfault/*
+MQTT -[#gray]-> FH_in2 : subscribe:\nstatus/update
+
+FH_out1 -[#red,bold]-> MQTT : topic:\nemergency/stop
+FH_out2 -[#gray]-> DB : logEntry
+
+FC_out2 -[#gray]-> DB : operationLog
+
+note right of MQTT
+  **Message Bus Configuration:**
+  - QoS Level: 1 (at least once)
+  - Retain: false (no stale data)
+  - Topics organized hierarchically
+  
+  **Data Flow Colors:**
+  Blue = Sensor data
+  Green = Control commands  
+  Red = Fault/emergency
+  Gray = Logging/status
+end note
+
+note bottom of SDC
+  **Analysis Functions:**
+  Functions represent logical behavior
+  independent of implementation.
+  
+  Mapped to processes in deployment_architecture.
+end note
+
+@enduml

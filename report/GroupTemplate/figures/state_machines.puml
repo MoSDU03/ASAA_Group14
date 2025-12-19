@@ -1,0 +1,169 @@
+@startuml state_machines
+
+title FillController State Machine
+
+state "Idle" as Idle {
+    Idle : entry / initialize()
+    Idle : do / listenForCan()
+}
+
+state "WaitingPosition" as WaitPos {
+    WaitPos : entry / startTimeout(200ms)
+    WaitPos : do / monitorSensor()
+}
+
+state "Filling" as Filling {
+    Filling : entry / openValve(), startTimer()
+    Filling : do / monitorLevel()
+    Filling : exit / recordStartTime()
+}
+
+state "ClosingValve" as Closing {
+    Closing : entry / closeValve(), stopTimer()
+    Closing : do / verifyValveClosed()
+}
+
+state "Complete" as Complete {
+    Complete : entry / logSuccess(), releaseCan()
+    Complete : do / resetCounters()
+}
+
+state "Fault" as Fault {
+    Fault : entry / logFault(), triggerAlarm()
+}
+
+[*] --> Idle
+
+Idle --> WaitingPosition : canDetected / timestamp=now()
+
+WaitPos --> Filling : [positionValid] / validatePosition()
+WaitPos --> Fault : [timeout OR NOT positionValid] / logError("Position sensor fault")
+
+Filling --> ClosingValve : [level >= targetLevel] / targetReached=true
+Filling --> ClosingValve : [fillTime > maxFillTime] / timeout=true
+Filling --> Fault : sensorFault / logError("Level sensor fault")
+
+Closing --> Complete : [valveClosed AND NOT timeout] / success=true
+Closing --> Fault : [valveClosed AND timeout] / logError("Overfill detected")
+
+Complete --> Idle : canReleased / cleanup()
+
+Fault --> Idle : faultAcknowledged [NOT criticalFault] / reset()
+Fault --> [*] : [criticalFault] / emergencyShutdown()
+
+note right of Filling
+  **Timing Constraints:**
+  - Max fill time: 3000ms
+  - Level check interval: 50ms
+  
+  **Invariants:**
+  - NOT (Filling AND valveClosed)
+  - (Complete) IMPLIES (level in range)
+end note
+
+@enduml
+
+@startuml sensor_collector_sm
+
+title SensorDataCollector State Machine
+
+state "Idle" as SI {
+    SI : entry / initializeSensors()
+}
+
+state "Polling" as Poll {
+    Poll : entry / startPollTimer(50ms)
+    Poll : do / readSensors()
+}
+
+state "ValidatingPosition" as Validate {
+    Validate : entry / checkTolerance()
+    Validate : do / applyFilter()
+}
+
+state "Publishing" as Pub {
+    Pub : entry / createMessage()
+    Pub : do / publishMQTT()
+}
+
+state "DetectingFault" as DetFault {
+    DetFault : entry / analyzeFault()
+    DetFault : do / publishFaultMsg()
+}
+
+[*] --> SI
+
+SI --> Poll : systemReady / startMonitoring()
+
+Poll --> Validate : dataReceived [dataValid] / rawData=reading
+Poll --> DetectingFault : dataReceived [NOT dataValid] / errorCount++
+Poll --> DetectingFault : timeout [noData FOR 200ms] / timeoutFault=true
+
+Validate --> Publishing : [withinTolerance] / validData=true
+Validate --> DetectingFault : [outsideTolerance] / validData=false
+
+Publishing --> Poll : published / ack()
+
+DetectingFault --> Poll : [errorCount < threshold AND faultResolved] / reset()
+DetectingFault --> SI : [errorCount >= threshold] / criticalFault()
+
+note right of Poll
+  **Polling Strategy:**
+  - Frequency: 20Hz (50ms period)
+  - Timeout: 200ms (4 missed readings)
+  - Filter: Moving average (n=5)
+end note
+
+@enduml
+
+@startuml fault_handler_sm
+
+title FaultHandler State Machine
+
+state "Monitoring" as Mon {
+    Mon : entry / subscribeToFaults()
+    Mon : do / watchdogCheck()
+}
+
+state "Analyzing" as Analyze {
+    Analyze : entry / classifyFault()
+    Analyze : do / assessSeverity()
+}
+
+state "Responding" as Respond {
+    Respond : entry / executeResponse()
+}
+
+state "EmergencyStop" as EStop {
+    EStop : entry / shutdownAll(), notify()
+    EStop : do / safeState()
+}
+
+state "Logging" as Log {
+    Log : entry / writeToDB()
+    Log : do / updateMetrics()
+}
+
+[*] --> Mon
+
+Mon --> Analyzing : faultReceived / faultData=message
+
+Analyzing --> Responding : [severity == low] / response=retry
+Analyzing --> Responding : [severity == medium] / response=pause
+Analyzing --> EStop : [severity == critical] / emergency=true
+
+Responding --> Logging : responseComplete / duration=elapsed()
+
+Logging --> Mon : logged / clearFault()
+
+EStop --> Logging : systemSafe / emergencyComplete=true
+
+note bottom of EStop
+  **Emergency Response:**
+  - Close all valves: < 50ms
+  - Stop conveyor: < 100ms
+  - Trigger alarms: immediate
+  - Log with timestamp
+end note
+
+@enduml

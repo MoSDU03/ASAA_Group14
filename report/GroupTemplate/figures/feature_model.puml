@@ -1,0 +1,68 @@
+@startuml feature_model
+!define MANDATORY_FILLED circle
+!define OPTIONAL_EMPTY circle
+!define ALTERNATIVE_ARC arc
+
+skinparam rectangle {
+    BackgroundColor White
+    BorderColor Black
+}
+
+skinparam packageStyle rectangle
+
+rectangle "CanFillingSystem" as Root {
+}
+
+' Mandatory features (filled circle)
+rectangle "DetectCanPosition" as Detect
+rectangle "ControlLiquidFlow" as Control
+rectangle "MonitorFillLevel" as Monitor
+rectangle "LogOperations" as Log
+
+' Alternative sensor types (XOR)
+package "SensorType\n(Alternative)" as SensorPkg {
+    rectangle "UltrasonicSensor" as Ultrasonic
+    rectangle "CapacitiveSensor" as Capacitive
+}
+
+' Optional features (empty circle)
+rectangle "FaultDetection\n(Optional)" as Fault
+rectangle "EmergencyShutdown\n(Optional)" as Emergency
+
+' Connections with notation
+Root -down-|> Detect : <<mandatory>>
+Root -down-|> Control : <<mandatory>>
+Root -down-|> Monitor : <<mandatory>>
+Root -down-|> Log : <<mandatory>>
+
+Detect -down-> SensorPkg : <<requires>>
+
+SensorPkg -down-> Ultrasonic : <<xor>>
+SensorPkg -down-> Capacitive : <<xor>>
+
+Root .down.> Fault : <<optional>>
+Root .down.> Emergency : <<optional>>
+
+Fault ..> Emergency : <<requires>>
+
+note right of Root
+  **Feature Model Legend:**
+  Solid line + filled circle = Mandatory
+  Dashed line + empty circle = Optional
+  Package with xor = Alternative (one of)
+  
+  **Configuration:**
+  All mandatory features must be present.
+  Select ONE sensor type.
+  Fault detection recommended for safety.
+end note
+
+note bottom of SensorPkg
+  **Sensor Selection Rationale:**
+  - Ultrasonic: Better range, immune to liquid type
+  - Capacitive: Higher precision, lower cost
+  
+  Selected: Ultrasonic (better reliability)
+end note
+
+@enduml
