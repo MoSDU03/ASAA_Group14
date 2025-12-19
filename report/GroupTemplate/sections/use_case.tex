@@ -27,7 +27,7 @@ Following Bass et al.~\cite{bass_swa}, we define three quality scenarios:
     \item \textit{Environment:} Active filling operation
     \item \textit{Artifact:} Fault handler
     \item \textit{Response:} Emergency valve closure
-    \item \textit{Measure:} Response time < 50ms
+    \item \textit{Measure:} Response time \textless 50ms
 \end{itemize}
 
 \textbf{QAS-R1 (Reliability):}
@@ -37,12 +37,12 @@ Following Bass et al.~\cite{bass_swa}, we define three quality scenarios:
     \item \textit{Environment:} Runtime operation
     \item \textit{Artifact:} Sensor data collector
     \item \textit{Response:} Fault detected and logged
-    \item \textit{Measure:} Detection latency < 200ms
+    \item \textit{Measure:} Detection latency \textless 200ms
 \end{itemize}
 
 \subsection{Requirements}
 
-Table~\ref{tab:requirements} lists 15 requirements derived from the quality scenarios. Eight functional requirements (FR-01 to FR-08) specify system behavior: can detection, position validation, fill level control, valve operation, sensor polling, operation logging, timeout detection, and can release. Seven non-functional requirements (NFR-01 to NFR-07) specify quality constraints: cycle time (600-1500ms), maximum fill time (3000ms), fill tolerance (±5ml), position tolerance (±2mm), fault detection latency (<200ms), emergency response time (<50ms), and success rate (>99%).
+Table~\ref{tab:requirements} lists 15 requirements derived from the quality scenarios. Eight functional requirements (FR-01 to FR-08) specify system behavior: can detection, position validation, fill level control, valve operation, sensor polling, operation logging, timeout detection, and can release. Seven non-functional requirements (NFR-01 to NFR-07) specify quality constraints: cycle time (600-1500ms), maximum fill time (3000ms), fill tolerance (±5ml), position tolerance (±2mm), fault detection latency (\textless 200ms), emergency response time (\textless 50ms), and success rate (\textgreater 99\%).
 
 \begin{table}[htbp]
 \caption{Requirements Specification}
@@ -66,9 +66,9 @@ NFR-01 & Perf & Cycle time: 600-1500ms \\
 NFR-02 & Perf & Max fill time: 3000ms \\
 NFR-03 & Perf & Fill tolerance: ±5ml \\
 NFR-04 & Safety & Position tolerance: ±2mm \\
-NFR-05 & Rel & Fault detection: <200ms \\
-NFR-06 & Safety & Emergency response: <50ms \\
-NFR-07 & Rel & Success rate: >99\% \\
+NFR-05 & Rel & Fault detection: \textless 200ms \\
+NFR-06 & Safety & Emergency response: \textless 50ms \\
+NFR-07 & Rel & Success rate: \textgreater 99\% \\
 \hline
 \end{tabular}
 \end{table}

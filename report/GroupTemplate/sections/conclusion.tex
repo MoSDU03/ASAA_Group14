@@ -18,9 +18,9 @@ Three validated trade-offs: (1) MQTT QoS 1 adds 5-10ms latency vs QoS 0 but prev
 
 \textbf{RQ3 - What can be modeled, validated, and verified?}
 
-UPPAAL verified timing properties (Q3, Q4, Q8), safety invariants (Q5, Q9, Q10), liveness properties (Q7), and deadlock freedom (Q1). State space of 1,847 states explored in <1 second proves formal verification is practical for industrial control systems. 
+UPPAAL verified timing properties (Q3, Q4, Q8), safety invariants (Q5, Q9, Q10), liveness properties (Q7), and deadlock freedom (Q1). State space of 1,847 states explored in \textless 1 second proves formal verification is practical for industrial control systems. 
 
-Cannot fully model: (1) Network latency variation due to broker load, mitigated via QoS configuration and validated empirically. (2) Physical component variability (valve response 15±3ms, sensor noise σ=0.8mm), measured separately and confirmed within assumptions. (3) Long-term reliability effects (component wear, temperature drift), requiring extended operational testing beyond this study.
+Cannot fully model: (1) Network latency variation due to broker load, mitigated via QoS configuration and validated empirically. (2) Physical component variability (valve response 15±3ms, sensor noise $\sigma = 0.8\,\mathrm{mm}$), measured separately and confirmed within assumptions. (3) Long-term reliability effects (component wear, temperature drift), requiring extended operational testing beyond this study.
 
 Simulation provided witness traces predicting 892ms cycle time and 127ms fault detection, both confirmed by implementation. This demonstrates UPPAAL's utility for predicting actual system behavior.
 
@@ -46,7 +46,7 @@ Iterative refinement validated model-driven approach: formal model -\textgreater
 
 \textbf{Safety Certification:} Apply ISO 26262 hazard analysis to identify additional safety requirements. Formal verification of hazard mitigation measures.
 
-\textbf{Production deployment_architecture:} Long-term study (10,000+ cycles, 24/7 operation) measuring reliability, wear effects, and maintenance needs. Validate that 99.1\% lab success rate holds in production.
+\textbf{Production deployment\_architecture:} Long-term study (10,000+ cycles, 24/7 operation) measuring reliability, wear effects, and maintenance needs. Validate that 99.1\% lab success rate holds in production.
 
 \textbf{Network Resilience:} Test behavior under MQTT broker failures, network partitions, and high load conditions. Design and verify broker failover mechanisms.
 
