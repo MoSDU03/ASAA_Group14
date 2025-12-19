@@ -45,7 +45,7 @@ Transitions include guards and actions following SysML notation:
 \begin{itemize}
     \item \textit{Idle} -> \textit{WaitingPosition} [canDetected] / cycleStart()
     \item \textit{WaitingPosition} -> \textit{Filling} [positionValid AND cycleTime $\leq$ 200ms] / openValve()
-    \item \textit{Filling} -> \textit{ClosingValve} [level ≥ 325ml AND fillTime $\leq$ 3000ms] / closeValve()
+    \item \textit{Filling} -> \textit{ClosingValve} [level $\geq$ 325ml AND fillTime $\leq$ 3000ms] / closeValve()
     \item \textit{ClosingValve} -> \textit{Complete} [levelInTolerance] / logSuccess()
     \item Any state -> \textit{Fault} [timeout OR sensorFailure] / emergencyClose()
 \end{itemize}
@@ -79,7 +79,7 @@ Timing constraints appear as state invariants (\textit{WaitingPosition}: cycleTi
 \textit{Choice:} Docker containers for each component.
 
 \textit{Rationale:} Isolation enables independent scaling, simplified deployment\_architecture, and consistent environments across development and production.
-\textit{Trade-off:} Container overhead (~10ms startup, small memory cost) vs deployment_architecture flexibility and reproducibility.
+\textit{Trade-off:} Container overhead (~10ms startup, small memory cost) vs deployment\_architecture flexibility and reproducibility.
 
 \textit{Validation:} Empirical measurements show overhead acceptable for 600-1500ms cycle time requirement.
 
