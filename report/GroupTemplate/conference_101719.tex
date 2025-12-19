@@ -50,13 +50,19 @@
 \newcommand{\LE}{\ensuremath{\leq}}
 \newcommand{\GE}{\ensuremath{\geq}}
 
-% hyperref must be loaded before pdfstringdefDisableCommands
-% --- hyperref: avoid xdvipdfmx "pdf_link_obj" crash on first run (no .aux) ---
-\IfFileExists{main.aux}{
-  \usepackage{hyperref}
-}{
-  \usepackage[draft]{hyperref} % no real PDF link objects created
-}
+% --- Safe URL formatting without hyperlinks (avoids xdvipdfmx pdf_link_obj crash) ---
+\usepackage{url}
+\urlstyle{same}
+
+% If you have \href in the text, define it to print text only:
+\providecommand{\href}[2]{#2}
+
+% Optional fallbacks if you used hyperref commands somewhere:
+\providecommand{\autoref}[1]{\ref{#1}}
+\providecommand{\nameref}[1]{\ref{#1}}
+\providecommand{\hyperref}[2][]{#2}
+
+
 % Safe monospace UPPAAL queries (prints literal < > _ ! etc.)
 \newcommand{\uppaaltt}[1]{\texttt{\detokenize{#1}}}
 
