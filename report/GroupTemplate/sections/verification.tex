@@ -24,7 +24,10 @@ Global channels (\texttt{can\_detected}, \texttt{position\_valid}, \texttt{valve
 
 \subsection{CTL Properties}
 
-Table~\ref{tab:verification} lists 10 verified properties linking to requirements. We use UPPAAL's CTL query language where \texttt{A[]} means "for all paths always," \texttt{E<>} means "there exists a path where eventually," and \texttt{A<>} means "for all paths eventually."
+Table~\ref{tab:verification} lists 10 verified properties linking to requirements.
+We use UPPAAL's CTL query language where \texttt{\ABox} means ``for all paths always,''
+\texttt{\EAng} means ``there exists a path where eventually,''
+and \texttt{\AAng} means ``for all paths eventually.''
 
 \begin{table}[htbp]
 \caption{Verification Results}
@@ -35,16 +38,16 @@ Table~\ref{tab:verification} lists 10 verified properties linking to requirement
 \hline
 \textbf{Query} & \textbf{Property} & \textbf{Result} \\
 \hline
-Q1 & A[] not deadlock & Satisfied \\
-Q2 & E<> FillController.Complete & Satisfied \\
-Q3 & A[] Filling => fill\_clock <= 3000 & Satisfied \\
-Q4 & A[] WaitPos => cycle\_clock <= 200 & Satisfied \\
-Q5 & A[] Complete => level in [325,335] & Satisfied \\
-Q6 & E<> Fault & Satisfied \\
-Q7 & A<> Idle & Satisfied \\
-Q8 & E<> (Complete AND cycle in [600,1500]) & Satisfied \\
-Q9 & A[] (!sensor AND Filling) => Fault & Satisfied \\
-Q10 & A[] (timeout AND ClosingValve) => Fault & Satisfied \\
+Q1  & \ABox\ not deadlock & Satisfied \\
+Q2  & \EAng\ FillController.Complete & Satisfied \\
+Q3  & \ABox\ Filling $\Rightarrow$ fill\_clock \LE\ 3000 & Satisfied \\
+Q4  & \ABox\ WaitPos $\Rightarrow$ cycle\_clock \LE\ 200 & Satisfied \\
+Q5  & \ABox\ Complete $\Rightarrow$ level in $[325,335]$ & Satisfied \\
+Q6  & \EAng\ Fault & Satisfied \\
+Q7  & \AAng\ Idle & Satisfied \\
+Q8  & \EAng\ (Complete AND cycle in $[600,1500]$) & Satisfied \\
+Q9  & \ABox\ (!sensor AND Filling) $\Rightarrow$ Fault & Satisfied \\
+Q10 & \ABox\ (timeout AND ClosingValve) $\Rightarrow$ Fault & Satisfied \\
 \hline
 \end{tabular}
 \end{table}
