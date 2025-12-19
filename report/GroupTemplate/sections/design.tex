@@ -74,12 +74,11 @@ Timing constraints appear as state invariants (\textit{WaitingPosition}: cycleTi
 
 \textit{Mitigation:} Message handlers designed to be idempotent. Empirical testing (Section~\ref{sec:evaluation}) confirms latency remains within bounds.
 
-\textbf{Decision 3: Containerized deployment_architecture}
+\textbf{Decision 3: Containerized deployment\_architecture}
 
 \textit{Choice:} Docker containers for each component.
 
-\textit{Rationale:} Isolation enables independent scaling, simplified deployment_architecture, and consistent environments across development and production.
-
+\textit{Rationale:} Isolation enables independent scaling, simplified deployment\_architecture, and consistent environments across development and production.
 \textit{Trade-off:} Container overhead (~10ms startup, small memory cost) vs deployment_architecture flexibility and reproducibility.
 
 \textit{Validation:} Empirical measurements show overhead acceptable for 600-1500ms cycle time requirement.

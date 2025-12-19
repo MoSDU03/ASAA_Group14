@@ -14,7 +14,7 @@ Event-driven architecture with MQTT supports requirements through asynchronous m
 
 \textbf{RQ2 - Which trade-offs result from technology choices?}
 
-Three validated trade-offs: (1) MQTT QoS 1 adds 5-10ms latency vs QoS 0 but prevents message loss; measured overhead is 0.7\% of cycle time budget, acceptable for gained reliability. (2) Docker containerization adds ~10ms startup overhead vs native deployment_architecture but enables isolation and reproducibility; testing shows no impact on requirements. (3) Event-driven messaging sacrifices deterministic timing of time-triggered approach for loose coupling; timeout guards recovered predictability as evidenced by 43ms standard deviation (4.8\% of mean).
+Three validated trade-offs: (1) MQTT QoS 1 adds 5-10ms latency vs QoS 0 but prevents message loss; measured overhead is 0.7\% of cycle time budget, acceptable for gained reliability. (2) Docker containerization adds ~10ms startup overhead vs native deployment\_architecture but enables isolation and reproducibility; testing shows no impact on requirements. (3) Event-driven messaging sacrifices deterministic timing of time-triggered approach for loose coupling; timeout guards recovered predictability as evidenced by 43ms standard deviation (4.8\% of mean).
 
 \textbf{RQ3 - What can be modeled, validated, and verified?}
 
@@ -36,7 +36,7 @@ Iterative refinement validated model-driven approach: formal model -> verificati
 
 \textbf{Scope Constraints:} Single-can model doesn't capture concurrent filling stations, multi-product switching, or scaling to 1000+ cans/hour production rates. Architecture would need extension for these scenarios, though core patterns (event-driven, timeout guards, fault handling) should generalize.
 
-\textbf{Operational Environment:} Testing used controlled conditions (20°C, standard flow rate, no physical wear). Production deployment_architecture would encounter temperature variation, viscosity changes, and component degradation over time. Long-term reliability requires extended validation beyond 112 cycles.
+\textbf{Operational Environment:} Testing used controlled conditions (20°C, standard flow rate, no physical wear). Production deployment\_architecture would encounter temperature variation, viscosity changes, and component degradation over time. Long-term reliability requires extended validation beyond 112 cycles.
 
 \subsection{Future Work}
 
