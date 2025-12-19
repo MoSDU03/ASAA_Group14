@@ -51,6 +51,7 @@
 \newcommand{\GE}{\ensuremath{\geq}}
 
 % --- Safe URL formatting without hyperlinks (avoids xdvipdfmx pdf_link_obj crash) ---
+\usepackage{nohyperref} % comes with hyperref; defines commands but makes no links
 \usepackage{url}
 \urlstyle{same}
 
@@ -77,6 +78,7 @@
   \def\textgreater{>}%
   \def\uppaaltt#1{#1}%
 }
+
 
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
