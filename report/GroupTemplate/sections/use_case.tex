@@ -1,76 +1,9 @@
-\section{Use Case and Quality Attribute Scenarios}
+\section{Related Work}
 
-\subsection{System Scope}
+This work builds upon three research areas: architecture description languages, event-driven systems, and formal verification.
 
-The can filling system operates on a production conveyor line. A can arrives at the fill station where sensors detect position (±2mm tolerance), a controller opens a valve, level sensors monitor fill progress (target: 330ml ±5ml), and the controller closes the valve when target is reached. The system logs all operations to a database for quality assurance.
+EAST-ADL provides a systematic framework for automotive embedded systems with vehicle, analysis, and design levels~\cite{eastadl_blom}. We apply this methodology to industrial automation, demonstrating its broader applicability. Friedenthal et al.~\cite{friedenthal2014} present SysML for systems engineering; we adopt its behavioral diagrams with precise semantics enabling translation to formal models.
 
-\textbf{Explicit exclusions:} Sealing operations, quality inspection beyond fill level, routing mechanisms, multi-product configurations, and batch management are out of scope to maintain focus on architecture principles.
+Jepsen et al.~\cite{jepsen2019} analyze Industry 4.0 middleware architectures, highlighting the flexibility versus predictability trade-off in event-driven systems. Our contribution shows that timeout guards and careful QoS configuration achieve both. Buschmann et al.~\cite{buschmann2007} discuss asynchronous messaging patterns; we extend this with formal verification to guarantee timing properties.
 
-\subsection{Quality Attribute Scenarios}
-
-Following Bass et al.~\cite{bass_swa}, we define three quality scenarios:
-
-\textbf{QAS-P1 (Performance):}
-\begin{itemize}
-    \item \textit{Source:} Conveyor system
-    \item \textit{Stimulus:} Can arrives at fill station
-    \item \textit{Environment:} Normal operation (20°C, nominal flow)
-    \item \textit{Artifact:} Fill controller
-    \item \textit{Response:} Complete detection -> fill -> release cycle
-    \item \textit{Measure:} 600ms $\leq$ cycle time $\leq$ 1500ms
-\end{itemize}
-
-\textbf{QAS-S1 (Safety):}
-\begin{itemize}
-    \item \textit{Source:} Level sensor
-    \item \textit{Stimulus:} Sensor fault detected
-    \item \textit{Environment:} Active filling operation
-    \item \textit{Artifact:} Fault handler
-    \item \textit{Response:} Emergency valve closure
-    \item \textit{Measure:} Response time \textless 50ms
-\end{itemize}
-
-\textbf{QAS-R1 (Reliability):}
-\begin{itemize}
-    \item \textit{Source:} Internal monitoring
-    \item \textit{Stimulus:} Sensor fault occurs
-    \item \textit{Environment:} Runtime operation
-    \item \textit{Artifact:} Sensor data collector
-    \item \textit{Response:} Fault detected and logged
-    \item \textit{Measure:} Detection latency \textless 200ms
-\end{itemize}
-
-\subsection{Requirements}
-
-Table~\ref{tab:requirements} lists 15 requirements derived from the quality scenarios. Eight functional requirements (FR-01 to FR-08) specify system behavior: can detection, position validation, fill level control, valve operation, sensor polling, operation logging, timeout detection, and can release. Seven non-functional requirements (NFR-01 to NFR-07) specify quality constraints: cycle time (600-1500ms), maximum fill time (3000ms), fill tolerance (±5ml), position tolerance (±2mm), fault detection latency (\textless 200ms), emergency response time (\textless 50ms), and success rate (\textgreater 99\%).
-
-\begin{table}[htbp]
-\caption{Requirements Specification}
-\label{tab:requirements}
-\centering
-\small
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{ID} & \textbf{Type} & \textbf{Description} \\
-\hline
-FR-01 & Func & Detect can arrival \\
-FR-02 & Func & Validate position (±2mm) \\
-FR-03 & Func & Control fill level (330ml ±5ml) \\
-FR-04 & Func & Open/close valve on command \\
-FR-05 & Func & Poll sensors at 20Hz \\
-FR-06 & Func & Log all operations \\
-FR-07 & Func & Detect position timeout \\
-FR-08 & Func & Release can after completion \\
-\hline
-NFR-01 & Perf & Cycle time: 600-1500ms \\
-NFR-02 & Perf & Max fill time: 3000ms \\
-NFR-03 & Perf & Fill tolerance: ±5ml \\
-NFR-04 & Safety & Position tolerance: ±2mm \\
-NFR-05 & Rel & Fault detection: \textless 200ms \\
-NFR-06 & Safety & Emergency response: \textless 50ms \\
-NFR-07 & Rel & Success rate: \textgreater 99\% \\
-\hline
-\end{tabular}
-\end{table}
-
-Each requirement links to quality scenarios and is verified through UPPAAL properties (Section~\ref{sec:verification}) and empirical testing (Section~\ref{sec:evaluation}).
+Bengtsson et al.~\cite{bengtsson2004} present UPPAAL for real-time system verification using timed automata. Kang et al.~\cite{kang2015} verify automotive software timing properties in EAST-ADL. We apply similar techniques to industrial control and validate predictions empirically, demonstrating correlation between formal models and actual behavior.

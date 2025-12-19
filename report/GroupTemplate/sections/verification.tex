@@ -5,7 +5,7 @@
 
 We translated the SysML state machine to a network of UPPAAL timed automata. The FillController template contains six locations matching the states in Fig.~\ref{fig:statemachine}, with two clocks: \texttt{fill\_clock} measuring filling duration and \texttt{cycle\_clock} measuring total cycle time.
 
-Location invariants enforce timing bounds: \textit{Filling} has invariant \texttt{fill\_clock $\leq$ 3000} and \textit{WaitingPosition} has \texttt{cycle\_clock $\leq$ 200}. These prevent the model from remaining in time-bounded states beyond specified limits.
+Location invariants enforce timing bounds: \textit{Filling} has invariant \texttt{fill\_clock <= 3000} and \textit{WaitingPosition} has \texttt{cycle\_clock <= 200}. These prevent the model from remaining in time-bounded states beyond specified limits.
 
 Transitions use guards matching SysML conditions:
 \begin{lstlisting}[language=C]
@@ -24,10 +24,7 @@ Global channels (\texttt{can\_detected}, \texttt{position\_valid}, \texttt{valve
 
 \subsection{CTL Properties}
 
-Table~\ref{tab:verification} lists 10 verified properties linking to requirements.
-We use UPPAAL's CTL query language where \ABox\ means “for all paths always,”
-\EAng\ means “there exists a path where eventually,”
-and \AAng\ means “for all paths eventually.”
+Table~\ref{tab:verification} lists 10 verified properties linking to requirements. We use UPPAAL's CTL query language where \texttt{A[]} means "for all paths always," \texttt{E<>} means "there exists a path where eventually," and \texttt{A<>} means "for all paths eventually."
 
 \begin{table}[htbp]
 \caption{Verification Results}
@@ -38,16 +35,16 @@ and \AAng\ means “for all paths eventually.”
 \hline
 \textbf{Query} & \textbf{Property} & \textbf{Result} \\
 \hline
-Q1  & \ABox\ \uppaaltt{not deadlock} & Satisfied \\
-Q2  & \EAng\ \uppaaltt{FillController.Complete} & Satisfied \\
-Q3  & \ABox\ \uppaaltt{Filling => fill_clock <= 3000} & Satisfied \\
-Q4  & \ABox\ \uppaaltt{WaitPos => cycle_clock <= 200} & Satisfied \\
-Q5  & \ABox\ \uppaaltt{Complete => level in [325,335]} & Satisfied \\
-Q6  & \EAng\ \uppaaltt{Fault} & Satisfied \\
-Q7  & \AAng\ \uppaaltt{Idle} & Satisfied \\
-Q8  & \EAng\ \uppaaltt{(Complete AND cycle in [600,1500])} & Satisfied \\
-Q9  & \ABox\ \uppaaltt{(!sensor AND Filling) => Fault} & Satisfied \\
-Q10 & \ABox\ \uppaaltt{(timeout AND ClosingValve) => Fault} & Satisfied \\
+Q1 & A[] not deadlock & Satisfied \\
+Q2 & E<> FillController.Complete & Satisfied \\
+Q3 & A[] Filling imply fill clock <= 3000 & Satisfied \\
+Q4 & A[] WaitPos imply cycle clock <= 200 & Satisfied \\
+Q5 & A[] Complete imply level in [325,335] & Satisfied \\
+Q6 & E<> Fault & Satisfied \\
+Q7 & A<> Idle & Satisfied \\
+Q8 & E<> Complete AND cycle in [600,1500] & Satisfied \\
+Q9 & A[] (!sensor AND Filling) imply Fault & Satisfied \\
+Q10 & A[] (timeout AND ClosingValve) imply Fault & Satisfied \\
 \hline
 \end{tabular}
 \end{table}
@@ -68,13 +65,13 @@ State space exploration examined 1,847 states in 0.83 seconds, confirming all pr
 
 Initial verification revealed two design defects:
 
-\textbf{Defect 1:} Missing timeout guard on \textit{Filling} -> \textit{ClosingValve} transition. Counter-example showed execution where \texttt{fill\_clock} exceeded 3000ms before transition.
+\textbf{Defect 1:} Missing timeout guard on \textit{Filling} → \textit{ClosingValve} transition. Counter-example showed execution where \texttt{fill\_clock} exceeded 3000ms before transition.
 
-\textit{Fix:} Added guard \texttt{fill\_clock $\leq$ MAX\_FILL\_TIME} to transition. After correction, Q3 verified successfully.
+\textit{Fix:} Added guard \texttt{fill\_clock <= MAX\_FILL\_TIME} to transition. After correction, Q3 verified successfully.
 
 \textbf{Defect 2:} No invariant on \textit{WaitingPosition} location. Counter-example demonstrated indefinite waiting for position signal.
 
-\textit{Fix:} Added location invariant \texttt{cycle\_clock $\leq$ POSITION\_TIMEOUT}. This forces a transition (either to \textit{Filling} if valid, or to \textit{Fault} if timeout). After correction, Q4 verified successfully.
+\textit{Fix:} Added location invariant \texttt{cycle\_clock <= POSITION\_TIMEOUT}. This forces a transition (either to \textit{Filling} if valid, or to \textit{Fault} if timeout). After correction, Q4 verified successfully.
 
 These defects were found and corrected \textit{before any implementation}, demonstrating the value of formal verification. Both issues would have manifested as hard-to-debug timing violations in production code.
 
@@ -98,4 +95,4 @@ For fault scenarios, traces demonstrated:
     \item Level sensor failure: Idle to WaitingPosition to Filling to Fault at t=127ms
 \end{itemize}
 
-Both meet the \textless 200ms fault detection requirement (NFR-05).
+Both meet the <200ms fault detection requirement (NFR-05).
