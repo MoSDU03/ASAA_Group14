@@ -44,13 +44,13 @@ Figure~\ref{fig:statemachine} shows the FillController state machine with six st
 Transitions include guards and actions following SysML notation:
 \begin{itemize}
     \item \textit{Idle} -> \textit{WaitingPosition} [canDetected] / cycleStart()
-    \item \textit{WaitingPosition} -> \textit{Filling} [positionValid AND cycleTime ≤ 200ms] / openValve()
-    \item \textit{Filling} -> \textit{ClosingValve} [level ≥ 325ml AND fillTime ≤ 3000ms] / closeValve()
+    \item \textit{WaitingPosition} -> \textit{Filling} [positionValid AND cycleTime $\leq$ 200ms] / openValve()
+    \item \textit{Filling} -> \textit{ClosingValve} [level ≥ 325ml AND fillTime $\leq$ 3000ms] / closeValve()
     \item \textit{ClosingValve} -> \textit{Complete} [levelInTolerance] / logSuccess()
     \item Any state -> \textit{Fault} [timeout OR sensorFailure] / emergencyClose()
 \end{itemize}
 
-Timing constraints appear as state invariants (\textit{WaitingPosition}: cycleTime ≤ 200ms, \textit{Filling}: fillTime ≤ 3000ms) and transition guards, enabling direct mapping to UPPAAL clock constraints.
+Timing constraints appear as state invariants (\textit{WaitingPosition}: cycleTime $\leq$ 200ms, \textit{Filling}: fillTime $\leq$ 3000ms) and transition guards, enabling direct mapping to UPPAAL clock constraints.
 
 \subsection{Architectural Decisions and Trade-offs}
 

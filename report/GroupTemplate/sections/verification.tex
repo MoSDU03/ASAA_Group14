@@ -5,7 +5,7 @@
 
 We translated the SysML state machine to a network of UPPAAL timed automata. The FillController template contains six locations matching the states in Fig.~\ref{fig:statemachine}, with two clocks: \texttt{fill\_clock} measuring filling duration and \texttt{cycle\_clock} measuring total cycle time.
 
-Location invariants enforce timing bounds: \textit{Filling} has invariant \texttt{fill\_clock ≤ 3000} and \textit{WaitingPosition} has \texttt{cycle\_clock ≤ 200}. These prevent the model from remaining in time-bounded states beyond specified limits.
+Location invariants enforce timing bounds: \textit{Filling} has invariant \texttt{fill\_clock $\leq$ 3000} and \textit{WaitingPosition} has \texttt{cycle\_clock $\leq$ 200}. These prevent the model from remaining in time-bounded states beyond specified limits.
 
 Transitions use guards matching SysML conditions:
 \begin{lstlisting}[language=C]
@@ -67,11 +67,11 @@ Initial verification revealed two design defects:
 
 \textbf{Defect 1:} Missing timeout guard on \textit{Filling} -> \textit{ClosingValve} transition. Counter-example showed execution where \texttt{fill\_clock} exceeded 3000ms before transition.
 
-\textit{Fix:} Added guard \texttt{fill\_clock ≤ MAX\_FILL\_TIME} to transition. After correction, Q3 verified successfully.
+\textit{Fix:} Added guard \texttt{fill\_clock $\leq$ MAX\_FILL\_TIME} to transition. After correction, Q3 verified successfully.
 
 \textbf{Defect 2:} No invariant on \textit{WaitingPosition} location. Counter-example demonstrated indefinite waiting for position signal.
 
-\textit{Fix:} Added location invariant \texttt{cycle\_clock ≤ POSITION\_TIMEOUT}. This forces a transition (either to \textit{Filling} if valid, or to \textit{Fault} if timeout). After correction, Q4 verified successfully.
+\textit{Fix:} Added location invariant \texttt{cycle\_clock $\leq$ POSITION\_TIMEOUT}. This forces a transition (either to \textit{Filling} if valid, or to \textit{Fault} if timeout). After correction, Q4 verified successfully.
 
 These defects were found and corrected \textit{before any implementation}, demonstrating the value of formal verification. Both issues would have manifested as hard-to-debug timing violations in production code.
 
