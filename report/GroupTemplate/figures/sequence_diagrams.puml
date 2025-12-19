@@ -1,0 +1,211 @@
+@startuml sequence_normal_flow
+
+title Normal Can Filling Operation Sequence
+
+actor Conveyor
+participant "PositionSensor" as PS
+participant "SensorCollector" as SC
+participant "MQTT Broker" as MQTT
+participant "FillController" as FC
+participant "LevelSensor" as LS
+participant "FillValve" as FV
+database "PostgreSQL" as DB
+
+== Can Arrival ==
+Conveyor -> PS : Can arrives
+activate PS
+PS -> PS : Detect presence
+PS -> SC : sensorReading(distance)
+deactivate PS
+
+activate SC
+SC -> SC : Validate position\n[within ±2mm]
+SC -> MQTT : publish("sensor/position", {position: valid})
+deactivate SC
+
+== Position Processing ==
+activate MQTT
+MQTT -> FC : on_message("sensor/position")
+deactivate MQTT
+
+activate FC
+FC -> FC : State: Idle -> WaitingPosition
+FC -> FC : Validate can position
+FC -> FC : State: WaitingPosition -> Filling
+FC -> MQTT : publish("valve/command", {action: "open"})
+FC -> DB : log(event: "fill_start")
+deactivate FC
+
+== Filling Operation ==
+activate MQTT
+MQTT -> FV : on_message("valve/command")
+deactivate MQTT
+
+activate FV
+FV -> FV : Open valve
+FV -> FV : Liquid flows
+deactivate FV
+
+loop Every 50ms [while filling]
+    activate LS
+    LS -> SC : levelReading(volume)
+    deactivate LS
+    
+    activate SC
+    SC -> MQTT : publish("sensor/level", {volume: X})
+    deactivate SC
+    
+    activate MQTT
+    MQTT -> FC : on_message("sensor/level")
+    deactivate MQTT
+    
+    activate FC
+    FC -> FC : Check level\n[volume < 330ml ±5ml]
+    deactivate FC
+end
+
+== Fill Complete ==
+activate LS
+LS -> SC : levelReading(330ml)
+deactivate LS
+
+activate SC
+SC -> MQTT : publish("sensor/level", {volume: 330})
+deactivate SC
+
+activate MQTT
+MQTT -> FC : on_message("sensor/level")
+deactivate MQTT
+
+activate FC
+FC -> FC : Target reached\nState: Filling -> ClosingValve
+FC -> MQTT : publish("valve/command", {action: "close"})
+deactivate FC
+
+activate MQTT
+MQTT -> FV : on_message("valve/command")
+deactivate MQTT
+
+activate FV
+FV -> FV : Close valve
+FV -> FV : Verify closed
+deactivate FV
+
+activate FC
+FC -> FC : State: ClosingValve -> Complete
+FC -> MQTT : publish("status/update", {status: "complete"})
+FC -> DB : log(event: "fill_complete", duration: Xms)
+FC -> FC : State: Complete -> Idle
+deactivate FC
+
+Conveyor -> Conveyor : Release can
+
+note over PS, DB
+  **Timing:**
+  Total cycle: 600-1500ms
+  - Detection: ~50ms
+  - Validation: ~20ms  
+  - Filling: 500-1400ms
+  - Closing: ~30ms
+end note
+
+@enduml
+
+@startuml sequence_fault_scenario
+
+title Sensor Fault Detection and Recovery
+
+participant "LevelSensor" as LS
+participant "SensorCollector" as SC
+participant "MQTT Broker" as MQTT
+participant "FillController" as FC
+participant "FaultHandler" as FH
+participant "FillValve" as FV
+database "PostgreSQL" as DB
+
+== Normal Operation ==
+activate LS
+LS -> SC : levelReading(200ml)
+deactivate LS
+
+activate SC
+SC -> MQTT : publish("sensor/level", {volume: 200})
+deactivate SC
+
+== Sensor Failure ==
+activate LS
+LS -> LS : **FAULT: Sensor malfunction**
+LS -> SC : No data
+deactivate LS
+
+activate SC
+SC -> SC : Timeout detected\n[200ms elapsed]
+SC -> SC : errorCount++
+SC -> SC : State: Polling -> DetectingFault
+SC -> MQTT : publish("fault/sensor", {\n  type: "timeout",\n  sensor: "level",\n  severity: "critical"\n})
+deactivate SC
+
+== Fault Processing ==
+activate MQTT
+MQTT -> FC : on_message("fault/sensor")
+MQTT -> FH : on_message("fault/sensor")
+deactivate MQTT
+
+activate FC
+FC -> FC : Receive fault signal\nState: Filling -> Fault
+FC -> MQTT : publish("valve/command", {action: "close"})
+FC -> DB : log(event: "fault_detected", type: "sensor_timeout")
+deactivate FC
+
+activate FH
+FH -> FH : State: Monitoring -> Analyzing
+FH -> FH : Classify fault\n[severity: critical]
+FH -> FH : State: Analyzing -> EmergencyStop
+FH -> MQTT : publish("emergency/stop", {reason: "sensor_fault"})
+deactivate FH
+
+== Emergency Response ==
+activate MQTT
+MQTT -> FV : on_message("emergency/stop")
+deactivate MQTT
+
+activate FV
+FV -> FV : **IMMEDIATE CLOSE**\n[< 50ms]
+FV -> FV : Lock valve
+deactivate FV
+
+activate FH
+FH -> FH : Verify safe state
+FH -> FH : State: EmergencyStop -> Logging
+FH -> DB : log(event: "emergency_stop",\n  duration: Xms,\n  can_status: "partial_fill")
+FH -> FH : State: Logging -> Monitoring
+deactivate FH
+
+== Operator Intervention ==
+note over SC, FH
+  **Manual steps:**
+  1. Operator investigates sensor
+  2. Replaces/repairs sensor
+  3. Acknowledges fault via interface
+  4. System resumes after validation
+end note
+
+activate FC
+FC -> FC : faultAcknowledged\n[NOT criticalFault]
+FC -> FC : State: Fault -> Idle
+FC -> DB : log(event: "system_resumed")
+deactivate FC
+
+note over LS, DB
+  **Fault Detection Performance:**
+  - Detection latency: < 200ms
+  - Emergency response: < 50ms
+  - Total safety response: < 250ms
+  
+  **Requirements traced:**
+  - NFR-05: Fault detection
+  - NFR-06: Emergency shutdown  
+  - NFR-07: Safety response time
+end note
+
+@enduml

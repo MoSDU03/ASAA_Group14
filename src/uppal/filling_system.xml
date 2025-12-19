@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.6//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_6.dtd'>
+<nta>
+	<declaration>// Global declarations
+chan can_detected, position_valid, position_invalid;
+chan start_fill, target_reached, fill_timeout;
+chan valve_open, valve_close, valve_closed;
+chan sensor_fault, emergency_stop;
+clock fill_clock;
+clock cycle_clock;
+
+const int TARGET_LEVEL = 330;
+const int MAX_FILL_TIME = 3000;
+const int POSITION_TIMEOUT = 200;
+const int SENSOR_TIMEOUT = 200;
+const int EMERGENCY_RESPONSE = 50;
+
+int current_level = 0;
+bool position_sensor_active = true;
+bool level_sensor_active = true;
+bool fault_detected = false;
+</declaration>
+	<template>
+		<name>FillController</name>
+		<declaration>// Local declarations
+clock fill_clock;
+clock cycle_clock;
+</declaration>
+		<location id="id0" x="-136" y="-93">
+			<name x="-146" y="-127">Idle</name>
+		</location>
+		<location id="id1" x="68" y="-93">
+			<name x="58" y="-127">WaitingPosition</name>
+			<label kind="invariant" x="58" y="-76">cycle_clock &lt;= POSITION_TIMEOUT</label>
+		</location>
+		<location id="id2" x="289" y="-93">
+			<name x="279" y="-127">Filling</name>
+			<label kind="invariant" x="279" y="-76">fill_clock &lt;= MAX_FILL_TIME</label>
+		</location>
+		<location id="id3" x="476" y="-93">
+			<name x="466" y="-127">ClosingValve</name>
+		</location>
+		<location id="id4" x="289" y="68">
+			<name x="279" y="85">Complete</name>
+		</location>
+		<location id="id5" x="-136" y="68">
+			<name x="-146" y="85">Fault</name>
+		</location>
+		<init ref="id0"/>
+		<transition id="id6">
+			<source ref="id4"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="42" y="-8">valve_closed?</label>
+			<label kind="assignment" x="42" y="8">cycle_clock = 0</label>
+		</transition>
+		<transition id="id7">
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="guard" x="357" y="-34">current_level &gt;= TARGET_LEVEL - 5 &amp;&amp; current_level &lt;= TARGET_LEVEL + 5 &amp;&amp; fill_clock &lt;= MAX_FILL_TIME</label>
+			<label kind="synchronisation" x="357" y="17">valve_closed?</label>
+		</transition>
+		<transition id="id8">
+			<source ref="id3"/>
+			<target ref="id5"/>
+			<label kind="guard" x="127" y="102">current_level &lt; TARGET_LEVEL - 5 || current_level &gt; TARGET_LEVEL + 5 || fill_clock &gt; MAX_FILL_TIME</label>
+			<label kind="synchronisation" x="127" y="153">sensor_fault!</label>
+		</transition>
+		<transition id="id9">
+			<source ref="id2"/>
+			<target ref="id3"/>
+			<label kind="guard" x="323" y="-110">current_level &gt;= TARGET_LEVEL - 5</label>
+			<label kind="synchronisation" x="323" y="-76">valve_close!</label>
+		</transition>
+		<transition id="id10">
+			<source ref="id2"/>
+			<target ref="id5"/>
+			<label kind="guard" x="42" y="-25">!level_sensor_active || fill_clock &gt; MAX_FILL_TIME</label>
+			<label kind="synchronisation" x="42" y="8">sensor_fault!</label>
+		</transition>
+		<transition id="id11">
+			<source ref="id1"/>
+			<target ref="id2"/>
+			<label kind="guard" x="136" y="-110">position_sensor_active</label>
+			<label kind="synchronisation" x="118" y="-108">valve_open!</label>
+			<label kind="assignment" x="118" y="-93">fill_clock = 0</label>
+		</transition>
+		<transition id="id12">
+			<source ref="id1"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-85" y="-25">!position_sensor_active || cycle_clock &gt; POSITION_TIMEOUT</label>
+			<label kind="synchronisation" x="-85" y="8">sensor_fault!</label>
+		</transition>
+		<transition id="id13">
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-76" y="-110">can_detected?</label>
+			<label kind="assignment" x="-76" y="-93">cycle_clock = 0</label>
+		</transition>
+		<transition id="id14">
+			<source ref="id5"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-280" y="0">!fault_detected</label>
+			<label kind="assignment" x="-280" y="17">cycle_clock = 0</label>
+		</transition>
+	</template>
+	<system>// System definition
+system FillController;
+</system>
+	<queries>
+		<query>
+			<formula>A[] not deadlock</formula>
+			<comment>Q1: System should never deadlock - FR-01,FR-02</comment>
+			<result outcome="failure" type="quality" timestamp="2025-12-19 16:32:43 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; FillController.Complete</formula>
+			<comment>Q2: Possible to complete fill cycle - FR-01,FR-03</comment>
+			<result outcome="failure" type="quality" timestamp="2025-12-19 16:32:47 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A[] FillController.Filling imply fill_clock &lt;= MAX_FILL_TIME</formula>
+			<comment>Q3: Filling never exceeds max time - FR-04, NFR-02</comment>
+		</query>
+		<query>
+			<formula>A[] FillController.WaitingPosition imply cycle_clock &lt;= POSITION_TIMEOUT</formula>
+			<comment>Q4: Position detection timeout respected - NFR-05</comment>
+		</query>
+		<query>
+			<formula>A[] FillController.Complete imply (current_level &gt;= TARGET_LEVEL - 5 &amp;&amp; current_level &lt;= TARGET_LEVEL + 5)</formula>
+			<comment>Q5: Completed fills meet volume tolerance - FR-03</comment>
+			<result outcome="success" type="quality" timestamp="2025-12-19 16:33:24 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; FillController.Fault</formula>
+			<comment>Q6: Fault state is reachable - NFR-05,NFR-06</comment>
+			<result outcome="failure" type="quality" timestamp="2025-12-19 16:33:26 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>A&lt;&gt; FillController.Idle</formula>
+			<comment>Q7: System eventually returns to idle - Liveness</comment>
+			<result outcome="success" type="quality" timestamp="2025-12-19 16:33:30 +0100">
+			</result>
+		</query>
+		<query>
+			<formula>E&lt;&gt; (FillController.Complete and cycle_clock &gt;= 600 and cycle_clock &lt;= 1500)</formula>
+			<comment>Q8: Cycle time within 600-1500ms - NFR-01</comment>
+		</query>
+		<query>
+			<formula>A[] (FillController.Filling and !level_sensor_active) imply FillController.Fault</formula>
+			<comment>Q9: Sensor fault leads to fault state - NFR-05</comment>
+		</query>
+		<query>
+			<formula>A[] (FillController.ClosingValve and fill_clock &gt; MAX_FILL_TIME) imply FillController.Fault</formula>
+			<comment>Q10: Timeout during fill leads to fault - NFR-02</comment>
+		</query>
+	</queries>
+</nta>

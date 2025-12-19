@@ -1,0 +1,77 @@
+services:
+  mqtt_broker:
+    image: eclipse-mosquitto:2.0
+    container_name: filling_mqtt_broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mqtt_broker/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - filling_network
+    restart: unless-stopped
+
+  database:
+    image: postgres:15
+    container_name: filling_database
+    environment:
+      POSTGRES_USER: filling_user
+      POSTGRES_PASSWORD: filling_pass
+      POSTGRES_DB: filling_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - filling_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d filling_db -U filling_user"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  sensor_simulator:
+    build:
+      context: ./sensor_simulator
+      dockerfile: Dockerfile
+    container_name: filling_sensor_simulator
+    depends_on:
+      mqtt_broker:
+        condition: service_started
+    environment:
+      MQTT_BROKER: mqtt_broker
+      MQTT_PORT: 1883
+    networks:
+      - filling_network
+    restart: unless-stopped
+
+  fill_controller:
+    build:
+      context: ./fill_controller
+      dockerfile: Dockerfile
+    container_name: filling_controller
+    depends_on:
+      mqtt_broker:
+        condition: service_started
+      database:
+        condition: service_healthy
+    environment:
+      MQTT_BROKER: mqtt_broker
+      MQTT_PORT: 1883
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: filling_db
+      DB_USER: filling_user
+      DB_PASSWORD: filling_pass
+    networks:
+      - filling_network
+    restart: unless-stopped
+
+networks:
+  filling_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
