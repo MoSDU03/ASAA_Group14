@@ -1,6 +1,11 @@
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
+% --- Proper Unicode & language support for XeLaTeX ---
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes} % IEEE-compatible, full Unicode
 
+\usepackage{polyglossia}
+\setdefaultlanguage{danish}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
@@ -18,11 +23,6 @@
 \usepackage{pifont} % checkmarks
 %\theoremstyle{definition}
 %\newtheorem{definition}{Definition}[section]
-
-% --- Force XeTeX to write PDF directly (avoids xdvipdfmx pdf_link_obj crash) ---
-\ifdefined\XeTeXoutputmode
-  \XeTeXoutputmode=1
-\fi
 
 \usepackage{listings}
 \lstset
@@ -54,34 +54,13 @@
 \newcommand{\LE}{\ensuremath{\leq}}
 \newcommand{\GE}{\ensuremath{\geq}}
 
-% --- Safe URL formatting without hyperlinks (avoids xdvipdfmx pdf_link_obj crash) ---
-\usepackage{nohyperref} % comes with hyperref; defines commands but makes no links
-\usepackage{url}
-\urlstyle{same}
 
-% If you have \href in the text, define it to print text only:
-\providecommand{\href}[2]{#2}
-
-% Optional fallbacks if you used hyperref commands somewhere:
-\providecommand{\autoref}[1]{\ref{#1}}
-\providecommand{\nameref}[1]{\ref{#1}}
-\providecommand{\hyperref}[2][]{#2}
 
 
 % Safe monospace UPPAAL queries (prints literal < > _ ! etc.)
 \newcommand{\uppaaltt}[1]{\texttt{\detokenize{#1}}}
 
-% Hyperref: safe text in PDF strings/bookmarks
-\pdfstringdefDisableCommands{%
-  \def\ABox{A[]}% 
-  \def\EAng{E<>}%
-  \def\AAng{A<>}%
-  \def\LE{<=}%
-  \def\GE{>=}%
-  \def\textless{<}%
-  \def\textgreater{>}%
-  \def\uppaaltt#1{#1}%
-}
+
 
 
 
